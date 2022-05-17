@@ -8,8 +8,8 @@ use crate::msg::{ ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{DEE_COUNT};
 
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:dee-cosm";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+// const CONTRACT_NAME: &str = "crates.io:dee-cosm";
+// const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -20,6 +20,8 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     DEE_COUNT.save(deps.storage, &Uint64::zero())?;
     let res = Response::new();
+    let _ = info;
+    let _ = msg;
     Ok(res)
 }
 
@@ -27,7 +29,7 @@ pub fn instantiate(
 pub fn execute(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    // info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     let mut count = Uint64::zero();
@@ -66,12 +68,13 @@ mod tests {
         let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
 
         let msg = InstantiateMsg {};
-        let info = mock_info("creator", &coins(1000, "earth"));
+        let info = mock_info("creator",&[]);
 
-        
-
+        instantiate(deps.as_mut(),mock_env(), info.clone(),msg.clone()).unwrap();
+ 
         // we can just call .unwrap() to assert this was a success
-        let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+        let msg = ExecuteMsg::Dee{};
+        let res = execute(deps.as_mut(),mock_env(), msg.clone()).unwrap();
         assert_eq!(0, res.messages.len());
 
         // it worked, let's query the state
