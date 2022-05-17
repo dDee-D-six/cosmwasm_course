@@ -68,6 +68,8 @@ mod tests {
         let msg = InstantiateMsg {};
         let info = mock_info("creator", &coins(1000, "earth"));
 
+        
+
         // we can just call .unwrap() to assert this was a success
         let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
         assert_eq!(0, res.messages.len());
@@ -78,6 +80,7 @@ mod tests {
         assert_eq!(Uint64::zero(), value);
     }
 
+    /*
     #[test]
     fn increment() {
         let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
@@ -96,6 +99,7 @@ mod tests {
         let value: CountResponse = from_binary(&res).unwrap();
         assert_eq!(18, value.count);
     }
+    */
 
 /*
     #[test]
