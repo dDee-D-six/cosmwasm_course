@@ -1,11 +1,11 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
-use cw2::set_contract_version;
-
+use cosmwasm_std::{to_binary,Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, StdError,Uint64};
+use std::ops::Add;
+use cosmwasm_std::attr;
 use crate::error::ContractError;
 use crate::msg::{ ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE};
+use crate::state::{DEE_COUNT};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:dee-cosm";
@@ -18,7 +18,9 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    unimplemented!()
+    DEE_COUNT.save(deps.storage, &Uint64::zero())?;
+    let res = Response::new();
+    Ok(res)
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -28,13 +30,27 @@ pub fn execute(
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
-    unimplemented!()
+    let mut count = Uint64::zero();
+    match msg{
+        ExecuteMsg:: Dee{} =>{
+           let _:Result<Uint64,StdError> = DEE_COUNT.update(deps.storage, |exists|{
+                count = exists.add(Uint64::from(1u8));
+                Ok(count)
+            });
+          let mut res = Response::new();
+          res.attributes.push(attr("dee_count",count));
+          res.attributes.push(attr("dee_count","haha"));
+          res.data = Some(to_binary(&count)?);
+          Ok(res)
+        }
+    }
 }
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
-    unimplemented!()
+pub fn query(deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
+    let count:Uint64 = DEE_COUNT.load(deps.storage)?;
+    to_binary(&count)
 }
 
 
@@ -44,12 +60,12 @@ mod tests {
     use cosmwasm_std::testing::{mock_dependencies_with_balance, mock_env, mock_info};
     use cosmwasm_std::{coins, from_binary};
 
-    /*
+    
     #[test]
     fn proper_initialization() {
         let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
 
-        let msg = InstantiateMsg { count: 17 };
+        let msg = InstantiateMsg {};
         let info = mock_info("creator", &coins(1000, "earth"));
 
         // we can just call .unwrap() to assert this was a success
@@ -58,8 +74,8 @@ mod tests {
 
         // it worked, let's query the state
         let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCount {}).unwrap();
-        let value: CountResponse = from_binary(&res).unwrap();
-        assert_eq!(17, value.count);
+        let value: Uint64 = from_binary(&res).unwrap();
+        assert_eq!(Uint64::zero(), value);
     }
 
     #[test]
@@ -81,6 +97,7 @@ mod tests {
         assert_eq!(18, value.count);
     }
 
+/*
     #[test]
     fn reset() {
         let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
@@ -108,5 +125,5 @@ mod tests {
         let value: CountResponse = from_binary(&res).unwrap();
         assert_eq!(5, value.count);
     }
-    */
+*/
 }
